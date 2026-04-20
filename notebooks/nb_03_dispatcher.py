@@ -3,6 +3,7 @@
 # nb_03_dispatcher
 # Core execution engine for the migration workflow.
 #
+
 # Reads table_migration_config for the given process_group,
 # groups tables by priority tier, then:
 #   - Runs tiers SEQUENTIALLY (tier 1 completes before tier 2)
