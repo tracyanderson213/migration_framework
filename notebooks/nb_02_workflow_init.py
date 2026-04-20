@@ -5,6 +5,7 @@
 # Validates config, marks enabled tables as RUNNING,
 # and emits priority tier information for the dispatcher.
 #
+
 # Workflow parameters:
 #   process_group  — which group to run e.g. SNOWFLAKE_SAMPLE_DATA
 #   admin_catalog  — Unity Catalog catalog for config table
