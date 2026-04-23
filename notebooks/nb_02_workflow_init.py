@@ -99,10 +99,10 @@ for row in rows:
 
 if validation_errors:
     error_msg = f"Validation failed for process_group '{PROCESS_GROUP}':\n" + "\n".join(validation_errors)
-    print(f"❌ {error_msg}")
+    print(f" {error_msg}")
     raise Exception(error_msg)
 
-print(f"✅ All {len(rows)} rows passed validation")
+print(f" All {len(rows)} rows passed validation")
 
 # COMMAND ----------
 
@@ -121,7 +121,7 @@ spark.sql(f"""
       AND table_id IN ('{table_ids}')
 """)
 
-print(f"✅ Marked {len(rows)} rows as RUNNING")
+print(f" Marked {len(rows)} rows as RUNNING")
 
 # COMMAND ----------
 
@@ -141,7 +141,7 @@ for priority in sorted(tier_map.keys()):
     tier_summary.append(f"Priority {priority} ({len(tids)} tables): {', '.join(tids)}")
     print(f"  Tier {priority}: {tids}")
 
-print(f"\n✅ Workflow init complete — {len(tier_map)} priority tiers")
+print(f"\n Workflow init complete — {len(tier_map)} priority tiers")
 print(f"   Tiers: {sorted(tier_map.keys())}")
 
 # ── Pass summary to job output ────────────────────────────────

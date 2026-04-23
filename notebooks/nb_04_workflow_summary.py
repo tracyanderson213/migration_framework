@@ -52,7 +52,7 @@ results_df = spark.sql(f"""
 rows = results_df.collect()
 
 if not rows:
-    print(f"⚠️  No enabled rows found for process_group='{PROCESS_GROUP}'")
+    print(f" No enabled rows found for process_group='{PROCESS_GROUP}'")
     dbutils.notebook.exit("SUMMARY | No rows found")
 
 # COMMAND ----------
@@ -73,10 +73,10 @@ print(f"Process Group : {PROCESS_GROUP}")
 print(f"Run Time      : {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
 print(f"{'='*70}")
 print(f"Total tables  : {total}")
-print(f"✅ PASSED      : {len(passed_rows)}")
-print(f"❌ FAILED      : {len(failed_rows)}")
-print(f"⏳ RUNNING     : {len(running_rows)}  (did not complete)")
-print(f"🔵 PENDING     : {len(pending_rows)}  (not started)")
+print(f" PASSED      : {len(passed_rows)}")
+print(f" FAILED      : {len(failed_rows)}")
+print(f" RUNNING     : {len(running_rows)}  (did not complete)")
+print(f" PENDING     : {len(pending_rows)}  (not started)")
 print(f"{'─'*70}")
 print(f"Rows read from source : {total_sf_rows:,}")
 print(f"Rows in Delta target  : {total_delta_rows:,}")
@@ -84,7 +84,7 @@ print(f"{'='*70}")
 
 # ── Passed table details ──────────────────────────────────────
 if passed_rows:
-    print(f"\n✅ PASSED ({len(passed_rows)}):")
+    print(f"\n PASSED ({len(passed_rows)}):")
     for r in passed_rows:
         sf_cnt    = f"{r['last_sf_row_count']:,}"  if r['last_sf_row_count']  else 'N/A'
         delta_cnt = f"{r['last_delta_count']:,}"   if r['last_delta_count']   else 'N/A'
@@ -94,7 +94,7 @@ if passed_rows:
 
 # ── Failed table details ──────────────────────────────────────
 if failed_rows:
-    print(f"\n❌ FAILED ({len(failed_rows)}):")
+    print(f"\n FAILED ({len(failed_rows)}):")
     for r in failed_rows:
         print(f"  [{r['priority']}] {r['src_schema']}.{r['src_table']} ({r['load_mode']})")
         if r['notes']:
@@ -102,7 +102,7 @@ if failed_rows:
 
 # ── Still running (timed out) ─────────────────────────────────
 if running_rows:
-    print(f"\n⏳ STILL RUNNING (did not complete — check for hung jobs):")
+    print(f"\n STILL RUNNING (did not complete — check for hung jobs):")
     for r in running_rows:
         print(f"  [{r['priority']}] {r['src_schema']}.{r['src_table']}")
     # Mark stuck RUNNING rows as FAILED
@@ -113,7 +113,7 @@ if running_rows:
             notes = 'Marked FAILED by workflow_summary — task did not complete'
         WHERE table_id IN ('{running_ids}')
     """)
-    print(f"  ⚠️  Marked {len(running_rows)} stuck rows as FAILED")
+    print(f"   Marked {len(running_rows)} stuck rows as FAILED")
 
 # COMMAND ----------
 
@@ -135,9 +135,9 @@ exit_msg = (
 
 if total_failures > 0:
     raise Exception(
-        f"❌ Workflow completed with {total_failures} failure(s). "
+        f" Workflow completed with {total_failures} failure(s). "
         f"Check table_migration_config for details. | {exit_msg}"
     )
 
-print(f"\n✅ All tables passed — {exit_msg}")
+print(f"\n All tables passed — {exit_msg}")
 dbutils.notebook.exit(exit_msg)
