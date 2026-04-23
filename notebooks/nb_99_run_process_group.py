@@ -18,7 +18,7 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text("process_group",  "TPCH_POC")
+dbutils.widgets.text("process_group",  "TPCH_foreign_catalog")
 dbutils.widgets.text("admin_catalog",  "it")
 dbutils.widgets.text("config_schema",  "migration_config")
 dbutils.widgets.text("max_workers",    "8")
