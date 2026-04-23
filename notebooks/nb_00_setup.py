@@ -36,10 +36,10 @@ print(f"Target schema  : {TARGET_SCHEMA}")
 
 # ── Create schemas if not exists ──────────────────────────────
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS {ADMIN_CATALOG}.{CONFIG_SCHEMA}")
-print(f"✅ Schema {ADMIN_CATALOG}.{CONFIG_SCHEMA} ready")
+print(f" Schema {ADMIN_CATALOG}.{CONFIG_SCHEMA} ready")
 
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS {TARGET_CATALOG}.{TARGET_SCHEMA}")
-print(f"✅ Schema {TARGET_CATALOG}.{TARGET_SCHEMA} ready")
+print(f" Schema {TARGET_CATALOG}.{TARGET_SCHEMA} ready")
 
 # COMMAND ----------
 
@@ -199,7 +199,7 @@ VALUES
   'POC — incremental merge on o_orderdate. samples.tpch.orders ~1.5M rows. Priority 2 — after customer.'
 )
 """)
-print("✅ POC rows inserted (enabled=false — set to true when ready to run)")
+print(" POC rows inserted (enabled=false — set to true when ready to run)")
 
 # COMMAND ----------
 
@@ -222,15 +222,15 @@ display(spark.sql(f"""
 print("Testing foreign catalog reads...")
 try:
     cust_count = spark.sql("SELECT COUNT(*) AS cnt FROM samples.tpch.customer").collect()[0]['cnt']
-    print(f"✅ samples.tpch.customer : {cust_count:,} rows")
+    print(f" samples.tpch.customer : {cust_count:,} rows")
 except Exception as e:
-    print(f"❌ samples.tpch.customer : {str(e)[:120]}")
+    print(f" samples.tpch.customer : {str(e)[:120]}")
 
 try:
     ord_count = spark.sql("SELECT COUNT(*) AS cnt FROM samples.tpch.orders").collect()[0]['cnt']
-    print(f"✅ samples.tpch.orders   : {ord_count:,} rows")
+    print(f" samples.tpch.orders   : {ord_count:,} rows")
 except Exception as e:
-    print(f"❌ samples.tpch.orders   : {str(e)[:120]}")
+    print(f" samples.tpch.orders   : {str(e)[:120]}")
 
 print("""
 Setup complete. Next steps:
@@ -242,3 +242,31 @@ Setup complete. Next steps:
      SET enabled = true
      WHERE process_group = 'TPCH_POC';
 """)
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC -- src_table = what we read from Neon
+# MAGIC -- target_table = what lands in Databricks tpch_bronze
+# MAGIC INSERT INTO it.migration_config.table_migration_config
+# MAGIC VALUES (
+# MAGIC     'pg_neon_public_supplier_pg_001',
+# MAGIC     'postgresql',
+# MAGIC     'pg_neon',
+# MAGIC     'public',
+# MAGIC     'supplier_pg',            -- src_table
+# MAGIC     'it',
+# MAGIC     'tpch_bronze',
+# MAGIC     'pg_neon_supplier_pg',    -- target_table
+# MAGIC     'full', 'overwrite',
+# MAGIC     NULL, 'none', NULL, NULL,
+# MAGIC     's_suppkey', 's_suppkey',
+# MAGIC     'none', NULL, NULL,
+# MAGIC     'PG_NEON_jdbc',
+# MAGIC     'public', NULL,
+# MAGIC     'pg_neon',
+# MAGIC     false, 1,
+# MAGIC     'PENDING', NULL, NULL, NULL,
+# MAGIC     NULL, NULL, NULL,
+# MAGIC     'Neon PostgreSQL JDBC test. supplier_pg table from neondb.'
+# MAGIC );

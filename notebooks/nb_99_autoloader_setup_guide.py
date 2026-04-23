@@ -16,27 +16,26 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # ## Autoloader vs COPY INTO — decision guide
-# MAGIC #
-# MAGIC # | Scenario | Use |
-# MAGIC # |---|---|
-# MAGIC # | Snowflake migration — point in time | COPY INTO |
-# MAGIC # | External batch files, known schedule | COPY INTO (availableNow trigger) |
-# MAGIC # | Continuous file arrival, sub-hourly | Autoloader (continuous trigger) |
-# MAGIC # | High volume small files | Autoloader |
-# MAGIC # | IoT, clickstream, event feeds | Autoloader |
-# MAGIC # | Initial historical backfill | COPY INTO |
-# MAGIC # | Ongoing operational ingestion | Autoloader |
-# MAGIC #
-# MAGIC # Both land data into **bronze Delta tables**.
-# MAGIC # Neither does silver or gold transformations.
+# MAGIC ## Autoloader vs COPY INTO — decision guide
+# MAGIC | Scenario | Use |
+# MAGIC |---|---|
+# MAGIC | Snowflake migration — point in time | COPY INTO |
+# MAGIC | External batch files, known schedule | COPY INTO (availableNow trigger) |
+# MAGIC | Continuous file arrival, sub-hourly | Autoloader (continuous trigger) |
+# MAGIC | High volume small files | Autoloader |
+# MAGIC | IoT, clickstream, event feeds | Autoloader |
+# MAGIC | Initial historical backfill | COPY INTO |
+# MAGIC | Ongoing operational ingestion | Autoloader |
+# MAGIC
+# MAGIC Both land data into **bronze Delta tables**.
+# MAGIC Neither does silver or gold transformations.
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # ## Step 1 — Add autoloader support columns to table_migration_config
-# MAGIC #
-# MAGIC # Run once to extend the config table schema.
+# MAGIC ## Step 1 — Add autoloader support columns to table_migration_config
+# MAGIC
+# MAGIC Run once to extend the config table schema.
 
 # COMMAND ----------
 
@@ -189,37 +188,37 @@ print("Inserted: iot_telemetry (continuous Parquet)")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # ## Step 3 — Workflow setup by trigger mode
-# MAGIC #
-# MAGIC # ### Option A: availableNow (scheduled batch)
-# MAGIC # Create a Databricks Workflow with one task per table:
-# MAGIC # ```
-# MAGIC # Task: load_sfdc_accounts
-# MAGIC #   Notebook: nb_autoloader_bronze
-# MAGIC #   Parameters:
-# MAGIC #     table_id         = adls_sfdc_accounts_autoloader_001
-# MAGIC #     admin_catalog    = it
-# MAGIC #     config_schema    = migration_config
-# MAGIC #     adls_base_path   = abfss://raw@storage.dfs.core.windows.net
-# MAGIC #     checkpoint_base  = abfss://checkpoints@storage.dfs.core.windows.net
-# MAGIC #     autoloader_mode  = availableNow
-# MAGIC # Schedule: daily at 3am (after ADF lands files at 2am)
-# MAGIC # ```
-# MAGIC #
-# MAGIC # ### Option B: continuous (always-on streaming)
-# MAGIC # Create a Databricks Job with one task per streaming table.
-# MAGIC # Set the cluster to always-on (no auto-termination).
-# MAGIC # ```
-# MAGIC # Task: stream_crm_events
-# MAGIC #   Notebook: nb_autoloader_bronze
-# MAGIC #   Parameters:
-# MAGIC #     table_id         = adls_crm_events_autoloader_001
-# MAGIC #     autoloader_mode  = continuous
-# MAGIC #     trigger_interval = 30 seconds
-# MAGIC # Cluster: dedicated streaming cluster, no auto-termination
-# MAGIC # ```
-# MAGIC #
-# MAGIC # Note: continuous jobs do not terminate on their own.
+# MAGIC ## Step 3 — Workflow setup by trigger mode
+# MAGIC
+# MAGIC ### Option A: availableNow (scheduled batch)
+# MAGIC Create a Databricks Workflow with one task per table:
+# MAGIC
+# MAGIC Task: load_sfdc_accounts
+# MAGIC   Notebook: nb_autoloader_bronze
+# MAGIC   Parameters:
+# MAGIC     table_id         = adls_sfdc_accounts_autoloader_001
+# MAGIC     admin_catalog    = it
+# MAGIC     config_schema    = migration_config
+# MAGIC     adls_base_path   = abfss://raw@storage.dfs.core.windows.net
+# MAGIC     checkpoint_base  = abfss://checkpoints@storage.dfs.core.windows.net
+# MAGIC     autoloader_mode  = availableNow
+# MAGIC Schedule: daily at 3am (after ADF lands files at 2am)
+# MAGIC
+# MAGIC
+# MAGIC ### Option B: continuous (always-on streaming)
+# MAGIC Create a Databricks Job with one task per streaming table.
+# MAGIC Set the cluster to always-on (no auto-termination).
+# MAGIC
+# MAGIC Task: stream_crm_events
+# MAGIC   Notebook: nb_autoloader_bronze
+# MAGIC   Parameters:
+# MAGIC     table_id         = adls_crm_events_autoloader_001
+# MAGIC     autoloader_mode  = continuous
+# MAGIC     trigger_interval = 30 seconds
+# MAGIC Cluster: dedicated streaming cluster, no auto-termination
+# MAGIC
+# MAGIC
+# MAGIC Note: continuous jobs do not terminate on their own.
 # MAGIC # Monitor via Spark UI > Streaming tab.
 
 # COMMAND ----------
@@ -252,52 +251,45 @@ display(spark.sql(f"""
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # ## Checkpoint management
-# MAGIC #
-# MAGIC # Each Autoloader stream maintains a checkpoint at:
-# MAGIC # `{checkpoint_base}/{process_group}/{src_schema}/{src_table}/`
-# MAGIC #
-# MAGIC # The checkpoint tracks which files have been loaded.
-# MAGIC # **Never delete the checkpoint** unless you want to reprocess
-# MAGIC # all files from scratch (full reload).
-# MAGIC #
-# MAGIC # To reset a single stream and reload from scratch:
-# MAGIC # ```python
-# MAGIC # dbutils.fs.rm(
-# MAGIC #     'abfss://checkpoints@storage.dfs.core.windows.net/CRM_streaming/crm/events/',
-# MAGIC #     recurse=True
-# MAGIC # )
-# MAGIC # ```
-# MAGIC # Then re-trigger the notebook. All files will be reprocessed.
-# MAGIC #
-# MAGIC # ## Metadata columns added by Autoloader
-# MAGIC #
-# MAGIC # Every bronze table gets these lineage columns:
-# MAGIC # | Column | Value |
-# MAGIC # |---|---|
-# MAGIC # | _source_file | Full ADLS path of the source file |
-# MAGIC # | _source_format | parquet / json / csv |
-# MAGIC # | _ingested_at | Timestamp when row was loaded |
-# MAGIC # | _process_group | Process group from config |
-# MAGIC # | _src_schema | Source schema folder name |
-# MAGIC # | _src_table | Source table folder name |
+# MAGIC ## Checkpoint management
+# MAGIC
+# MAGIC Each Autoloader stream maintains a checkpoint at:
+# MAGIC `{checkpoint_base}/{process_group}/{src_schema}/{src_table}/`
+# MAGIC The checkpoint tracks which files have been loaded.
+# MAGIC **Never delete the checkpoint** unless you want to reprocess
+# MAGIC all files from scratch (full reload).
+# MAGIC To reset a single stream and reload from scratch:
+# MAGIC ```python
+# MAGIC dbutils.fs.rm(
+# MAGIC     'abfss://checkpoints@storage.dfs.core.windows.net/CRM_streaming/crm/events/',
+# MAGIC     recurse=True
+# MAGIC )
+# MAGIC ```
+# MAGIC Then re-trigger the notebook. All files will be reprocessed.
+# MAGIC ## Metadata columns added by Autoloader
+# MAGIC Every bronze table gets these lineage columns:
+# MAGIC | Column | Value |
+# MAGIC |---|---|
+# MAGIC | _source_file | Full ADLS path of the source file |
+# MAGIC | _source_format | parquet / json / csv |
+# MAGIC | _ingested_at | Timestamp when row was loaded |
+# MAGIC | _process_group | Process group from config |
+# MAGIC | _src_schema | Source schema folder name |
+# MAGIC | _src_table | Source table folder name |
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # ## Coexistence with COPY INTO migration framework
-# MAGIC #
-# MAGIC # The two patterns share the same table_migration_config table.
-# MAGIC # They are completely independent — different process groups,
-# MAGIC # different workflows, different load_mode values.
-# MAGIC #
-# MAGIC # | load_mode | Pattern | Workflow |
-# MAGIC # |---|---|---|
-# MAGIC # | overwrite | COPY INTO via foreign catalog | EDW_federated |
-# MAGIC # | merge | COPY INTO via foreign catalog | EDW_federated |
-# MAGIC # | copy_into | JDBC + ADLS Parquet + COPY INTO | EDW_copy_into |
-# MAGIC # | autoloader | Autoloader structured streaming | CRM_streaming |
-# MAGIC #
-# MAGIC # The dispatcher (nb_03_dispatcher) handles overwrite/merge/copy_into.
-# MAGIC # Autoloader tables run via nb_autoloader_bronze separately.
-# MAGIC # nb_04_workflow_summary can monitor all load_modes together.
+# MAGIC ## Coexistence with COPY INTO migration framework
+# MAGIC The two patterns share the same table_migration_config table.
+# MAGIC They are completely independent — different process groups,
+# MAGIC different workflows, different load_mode values.
+# MAGIC | load_mode | Pattern | Workflow |
+# MAGIC |---|---|---|
+# MAGIC | overwrite | COPY INTO via foreign catalog | EDW_federated |
+# MAGIC | merge | COPY INTO via foreign catalog | EDW_federated |
+# MAGIC | copy_into | JDBC + ADLS Parquet + COPY INTO | EDW_copy_into |
+# MAGIC | autoloader | Autoloader structured streaming | CRM_streaming |
+# MAGIC The dispatcher (nb_03_dispatcher) handles overwrite/merge/copy_into.
+# MAGIC Autoloader tables run via nb_autoloader_bronze separately.
+# MAGIC nb_04_workflow_summary can monitor all load_modes together.

@@ -3,7 +3,6 @@
 # nb_03_dispatcher
 # Core execution engine for the migration workflow.
 #
-
 # Reads table_migration_config for the given process_group,
 # groups tables by priority tier, then:
 #   - Runs tiers SEQUENTIALLY (tier 1 completes before tier 2)
@@ -145,7 +144,7 @@ def read_jdbc(row, where_clause=''):
 
     url_map = {
         'oracle'     : f"jdbc:oracle:thin:@{host}:{port}:{db}",
-        'postgresql' : f"jdbc:postgresql://{host}:{port}/{db}",
+        'postgresql' : f"jdbc:postgresql://{host}:{port}/{db}?sslmode=require",
         'sqlserver'  : f"jdbc:sqlserver://{host}:{port};databaseName={db}",
         'mysql'      : f"jdbc:mysql://{host}:{port}/{db}",
         'redshift'   : f"jdbc:redshift://{host}:{port}/{db}",
@@ -528,3 +527,4 @@ if total_failed > 0:
             print(f"  {r['table_id']}: {r['error']}")
 
 dbutils.notebook.exit(f"DISPATCHER | Passed: {total_passed} | Failed: {total_failed} | {PROCESS_GROUP}")
+

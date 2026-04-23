@@ -264,3 +264,4 @@ print(f"   Already-loaded files will be skipped automatically.")
 # ── Preview loaded data ───────────────────────────────────────
 print(f"Sample rows from {tgt}:")
 display(spark.table(tgt).limit(10))
+
